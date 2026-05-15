@@ -23,6 +23,9 @@ module "vpc" {
   enable_nat_gateway = true
   single_nat_gateway = true
 
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
   public_subnet_tags = {
     "kubernetes.io/role/elb" = 1
   }
@@ -43,33 +46,52 @@ module "eks" {
   kubernetes_version = "1.34"
 
   endpoint_public_access = true
+  endpoint_private_access = true
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
 
+
+
   authentication_mode = "API_AND_CONFIG_MAP"
 
   addons = {
-    coredns                = {}
-    kube-proxy             = {}
-    vpc-cni                = {}
-    eks-pod-identity-agent = {}
-    metrics-server         = {}
+  vpc-cni = {
+    before_compute = true
   }
+
+  kube-proxy = {
+    before_compute = true
+  }
+
+  coredns = {}
+
+  eks-pod-identity-agent = {}
+
+  metrics-server = {}
+}
 
   eks_managed_node_groups = {
-    base = {
-      instance_types = ["t3.small"]
+  base = {
+    instance_types = ["t3.small"]
 
-      min_size     = 2
-      max_size     = 4
-      desired_size = 2
+    min_size     = 2
+    max_size     = 4
+    desired_size = 2
 
-      labels = {
-        role = "base"
-      }
+    subnet_ids = module.vpc.private_subnets
+
+    iam_role_additional_policies = {
+      AmazonEKSWorkerNodePolicy          = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+      AmazonEKS_CNI_Policy               = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+      AmazonEC2ContainerRegistryReadOnly = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+    }
+
+    labels = {
+      role = "base"
     }
   }
+}
 
   tags = merge(local.tags, {
     "karpenter.sh/discovery" = local.name
@@ -77,7 +99,7 @@ module "eks" {
 }
 
 resource "aws_ecr_repository" "app" {
-  name                 = "eks-demo-app"
+  name                 = "eks-demo-app-senior"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
 
@@ -94,8 +116,10 @@ module "karpenter" {
 
   cluster_name = module.eks.cluster_name
 
-  enable_pod_identity             = true
-  create_pod_identity_association = true
+   namespace       = "karpenter"
+   service_account = "karpenter"
+
+  enable_inline_policy = true
 
   node_iam_role_additional_policies = {
     AmazonEKSWorkerNodePolicy          = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
@@ -115,11 +139,27 @@ resource "helm_release" "karpenter" {
   chart      = "karpenter"
   version    = "1.12.0"
 
+  timeout = 600
+  wait    = true
+
   values = [
     yamlencode({
       settings = {
         clusterName       = module.eks.cluster_name
         interruptionQueue = module.karpenter.queue_name
+      }
+
+      controller = {
+        env = [
+          {
+            name  = "AWS_REGION"
+            value = var.aws_region
+          },
+          {
+            name  = "AWS_DEFAULT_REGION"
+            value = var.aws_region
+          }
+        ]
       }
     })
   ]
