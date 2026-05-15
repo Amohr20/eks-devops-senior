@@ -1,0 +1,24 @@
+# Terraform
+**/.terraform/*
+.terraform/
+terraform/.terraform/
+
+# Terraform state
+*.tfstate
+*.tfstate.*
+terraform.tfstate
+terraform.tfstate.*
+
+# Variables sensibles
+*.tfvars
+*.tfvars.json
+
+# Planes y logs
+*.tfplan
+plan.out
+crash.log
+crash.*.log
+
+# Sistema
+.DS_Store
+Thumbs.db
