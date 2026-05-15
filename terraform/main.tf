@@ -170,12 +170,62 @@ resource "helm_release" "karpenter" {
   ]
 }
 
+resource "aws_iam_policy" "aws_load_balancer_controller" {
+  name        = "${local.name}-alb-controller-policy"
+  description = "IAM policy for AWS Load Balancer Controller"
+  policy      = file("${path.module}/alb-controller-iam-policy.json")
+
+  tags = local.tags
+}
+
+resource "aws_iam_role" "aws_load_balancer_controller" {
+  name = "${local.name}-alb-controller-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "pods.eks.amazonaws.com"
+        }
+        Action = [
+          "sts:AssumeRole",
+          "sts:TagSession"
+        ]
+      }
+    ]
+  })
+
+  tags = local.tags
+}
+
+resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
+  role       = aws_iam_role.aws_load_balancer_controller.name
+  policy_arn = aws_iam_policy.aws_load_balancer_controller.arn
+}
+
+resource "aws_eks_pod_identity_association" "aws_load_balancer_controller" {
+  cluster_name    = module.eks.cluster_name
+  namespace       = "kube-system"
+  service_account = "aws-load-balancer-controller"
+  role_arn        = aws_iam_role.aws_load_balancer_controller.arn
+
+  depends_on = [
+    module.eks,
+    aws_iam_role_policy_attachment.aws_load_balancer_controller
+  ]
+}
+
 resource "helm_release" "aws_load_balancer_controller" {
   namespace = "kube-system"
 
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
+
+  timeout = 600
+  wait    = true
 
   set = [
     {
@@ -187,6 +237,10 @@ resource "helm_release" "aws_load_balancer_controller" {
       value = "true"
     },
     {
+      name  = "serviceAccount.name"
+      value = "aws-load-balancer-controller"
+    },
+    {
       name  = "region"
       value = var.aws_region
     },
@@ -196,7 +250,10 @@ resource "helm_release" "aws_load_balancer_controller" {
     }
   ]
 
-  depends_on = [module.eks]
+  depends_on = [
+    module.eks,
+    aws_eks_pod_identity_association.aws_load_balancer_controller
+  ]
 }
 
 resource "aws_iam_openid_connect_provider" "github" {
