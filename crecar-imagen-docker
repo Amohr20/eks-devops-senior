@@ -1,0 +1,9 @@
+cd C:\kubernetes\eks-devops-senior\app
+
+docker build -t eks-demo-app-senior:v1 .
+
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 211125731695.dkr.ecr.us-east-1.amazonaws.com
+
+docker tag eks-demo-app-senior:v1 211125731695.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app-senior:v1
+
+docker push 211125731695.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app-senior:v1
