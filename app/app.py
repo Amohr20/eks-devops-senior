@@ -151,7 +151,7 @@ HTML = """
     <p class="subtitle">
       Aplicación Dockerizada desplegada en Amazon EKS con Terraform, Amazon ECR,
       Kubernetes Deployment, Service, ALB Ingress, HPA y Karpenter para autoscaling
-      de Pods y nodos EC2.
+      de Pods, nodos EC2 y CI/CD con GitHub Actions.
     </p>
 
     <div class="buttons">
