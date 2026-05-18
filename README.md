@@ -62,13 +62,13 @@ eks-devops-senior/
 │   └── Dockerfile
 │
 ├── k8s/
-│   ├── 01-namespace.yaml
-│   ├── 02-deployment.yaml
-│   ├── 03-service.yaml
-│   ├── 04-ingress.yaml
-│   ├── 05-hpa.yaml
-│   ├── 06-ec2nodeclass.yaml
-│   └── 07-nodepool.yaml
+│   ├── namespace.yaml
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   ├── ingress.yaml
+│   ├── hpa.yaml
+│   ├── ec2nodeclass.yaml
+│   └── nodepool.yaml
 │
 ├── terraform/
 │   ├── versions.tf
@@ -225,8 +225,8 @@ Al finalizar, Terraform muestra outputs similares a:
 
 ```text
 cluster_name = "eks-devops-senior"
-ecr_repository_url = "211125731695.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app-senior"
-github_actions_role_arn = "arn:aws:iam::211125731695:role/eks-devops-senior-github-actions-role"
+ecr_repository_url = "xxxxxxxxx.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app-senior"
+github_actions_role_arn = "arn:aws:iam::xxxxxxxxx:role/eks-devops-senior-github-actions-role"
 region = "us-east-1"
 vpc_id = "vpc-xxxxxxxx"
 ```
@@ -280,19 +280,19 @@ docker build -t eks-demo-app-senior:v1 .
 Login a ECR:
 
 ```powershell
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 211125731695.dkr.ecr.us-east-1.amazonaws.com
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin xxxxxxxx.dkr.ecr.us-east-1.amazonaws.com
 ```
 
 Etiquetar imagen:
 
 ```powershell
-docker tag eks-demo-app-senior:v1 211125731695.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app-senior:v1
+docker tag eks-demo-app-senior:v1 xxxxxxxx.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app-senior:v1
 ```
 
 Subir imagen:
 
 ```powershell
-docker push 211125731695.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app-senior:v1
+docker push xxxxxxxx.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app-senior:v1
 ```
 
 ---
@@ -636,62 +636,9 @@ Esto es importante porque algunos recursos pueden tardar minutos en desaparecer 
 
 ---
 
-## 15. Levantar nuevamente el proyecto
+## 15. Problemas resueltos durante el proyecto
 
-Al día siguiente:
-
-```powershell
-cd C:\kubernetes\eks-devops-senior\terraform
-terraform apply
-```
-
-Actualizar kubeconfig:
-
-```powershell
-aws eks update-kubeconfig `
---region us-east-1 `
---name eks-devops-senior
-```
-
-Validar cluster:
-
-```powershell
-kubectl get nodes
-kubectl get pods -A
-```
-
-Construir y subir imagen:
-
-```powershell
-cd C:\kubernetes\eks-devops-senior\app
-
-docker build -t eks-demo-app-senior:v1 .
-
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 211125731695.dkr.ecr.us-east-1.amazonaws.com
-
-docker tag eks-demo-app-senior:v1 211125731695.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app-senior:v1
-
-docker push 211125731695.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app-senior:v1
-```
-
-Aplicar Kubernetes:
-
-```powershell
-cd C:\kubernetes\eks-devops-senior\k8s
-kubectl apply -f .
-```
-
-Validar Ingress:
-
-```powershell
-kubectl get ingress -n app-demo
-```
-
----
-
-## 16. Problemas resueltos durante el proyecto
-
-### 16.1 NodeCreationFailure
+### 15.1 NodeCreationFailure
 
 Problema:
 
@@ -711,7 +658,7 @@ Solución:
 Configurar add-ons de EKS y usar before_compute para vpc-cni/kube-proxy.
 ```
 
-### 16.2 Karpenter sin credenciales
+### 15.2 Karpenter sin credenciales
 
 Problema:
 
@@ -753,7 +700,7 @@ Solución:
 Crear IAM Policy, IAM Role y Pod Identity Association para aws-load-balancer-controller.
 ```
 
-### 16.4 GitHub Actions sin permisos en EKS
+### 15.4 GitHub Actions sin permisos en EKS
 
 Problema:
 
@@ -772,28 +719,3 @@ Solución:
 ```text
 Crear EKS Access Entry y asociar AmazonEKSClusterAdminPolicy al role de GitHub Actions.
 ```
-
----
-
-## 17. Descripción para CV
-
-```text
-Implementé una plataforma Cloud/DevOps en AWS utilizando Terraform para aprovisionar VPC, EKS, ECR, IAM, Karpenter y AWS Load Balancer Controller. Desplegué una aplicación Dockerizada con CI/CD mediante GitHub Actions, publicada con ALB Ingress, HPA para escalamiento automático de Pods y Karpenter para escalamiento dinámico de nodos EC2. La arquitectura incluye subnets privadas, NAT Gateway, EKS Pod Identity, Amazon ECR y automatización completa de infraestructura como código.
-```
-
----
-
-## 18. Estado final del proyecto
-
-El proyecto demuestra:
-
-- Infraestructura como código con Terraform.
-- Aplicación contenerizada con Docker.
-- Despliegue sobre Amazon EKS.
-- Publicación mediante Application Load Balancer.
-- CI/CD con GitHub Actions.
-- Escalamiento horizontal de Pods con HPA.
-- Escalamiento dinámico de nodos EC2 con Karpenter.
-- Uso de IAM moderno con EKS Pod Identity.
-- Arquitectura AWS con subnets públicas y privadas.
-- Flujo realista de operación Cloud/DevOps.
