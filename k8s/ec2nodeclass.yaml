@@ -3,7 +3,7 @@ kind: EC2NodeClass
 metadata:
   name: default
 spec:
-  role: Karpenter-eks-devops-senior-2026051816283212470000000f
+  role: Karpenter-eks-devops-senior-20260520224506640100000012
   amiSelectorTerms:
     - alias: al2023@latest
   subnetSelectorTerms:
