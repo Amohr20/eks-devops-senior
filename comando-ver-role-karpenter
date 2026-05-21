@@ -1,0 +1,3 @@
+aws iam list-roles `
+--query "Roles[?contains(RoleName, 'Karpenter') && contains(RoleName, 'eks-devops-senior')].[RoleName,Arn]" `
+--output table
