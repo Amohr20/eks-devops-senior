@@ -192,7 +192,7 @@ HTML = """
     </section>
 
     <div class="footer">
-    Laboratorio profesional Cloud/DevOps con infraestructura como código y despliegue automatizable.
+    Angel Mohr - Laboratorio profesional Cloud/DevOps con infraestructura como código y despliegue automatizable.
     </div>
   </main>
 </body>
