@@ -29,7 +29,7 @@ jobs:
       - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::211125731695:role/eks-devops-senior-github-actions-role
+          role-to-assume: arn:aws:iam::508703379734:role/eks-devops-senior-github-actions-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
@@ -46,11 +46,11 @@ jobs:
 
       - name: Tag Docker image
         run: |
-          docker tag $ECR_REPOSITORY:$IMAGE_TAG 211125731695.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+          docker tag $ECR_REPOSITORY:$IMAGE_TAG 508703379734.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Push Docker image to ECR
         run: |
-          docker push 211125731695.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push 508703379734.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Update kubeconfig
         run: |
@@ -59,7 +59,7 @@ jobs:
       - name: Deploy image to EKS
         run: |
           kubectl set image deployment/$DEPLOYMENT_NAME \
-            $CONTAINER_NAME=211125731695.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG \
+            $CONTAINER_NAME=508703379734.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG \
             -n $K8S_NAMESPACE
 
       - name: Wait for rollout
