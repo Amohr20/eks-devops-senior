@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: eks-demo-app
-          image: 211125731695.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app-senior:v1
+          image: 508703379734.dkr.ecr.us-east-1.amazonaws.com/eks-demo-app-senior:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
