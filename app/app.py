@@ -224,7 +224,7 @@ def load():
         result += math.sqrt(12345.6789)
 
     return jsonify({
-        "message": "Carga CPU generada correctamente",
+        "message": "Carga CPU generada correctamente.",
         "pod": socket.gethostname(),
         "result": result
     })
